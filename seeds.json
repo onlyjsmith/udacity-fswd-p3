@@ -1,0 +1,35 @@
+{
+  "User": [
+    {
+      "name": "bob",
+      "email": "notreal@address.com",
+      "id": 1
+    }
+  ],
+  "Category": [
+    {
+      "id": 1,
+      "name": "running",
+      "user_id": 1
+    },
+    {
+      "id": 2,
+      "name": "dancing",
+      "user_id": 1
+    }
+  ],
+  "Item": [
+    {
+      "id": 1,
+      "name": "shorts",
+      "category_id": 1,
+      "user_id": 1
+    },
+    {
+      "id": 2,
+      "name": "shoes",
+      "category_id": 2,
+      "user_id": 1
+    }
+  ]
+}
