@@ -27,9 +27,13 @@ session = DBSession()
 
 # User Helper Functions
 
+
 def createUser(login_session):
-    newUser = User(name=login_session['username'], email=login_session[
-                   'email'], picture=login_session['picture'])
+    newUser = User(name=login_session['username'],
+                   email=login_session[
+                       'email'
+                   ],
+                   picture=login_session['picture'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -47,6 +51,7 @@ def getUserID(email):
         return user.id
     except:
         return None
+
 
 @app.route('/')
 @app.route('/categories')
@@ -156,7 +161,7 @@ def gconnect():
 
     flash("you are now logged in as %s" % login_session['gplus_id'])
     print "Done with auth!"
-    return output # `output` is returned to as the response to the POST request
+    return output  # `output` is returned to as the response to the POST request
 
 
 if __name__ == '__main__':
