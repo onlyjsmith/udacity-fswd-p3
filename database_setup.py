@@ -48,13 +48,9 @@ class Item(Base):
     @property
     def serialize(self):
         """Return object data in easily serializeable format"""
-        return {
-            'name': self.name,
-            'id': self.id,
-        }
+        return {'name': self.name, 'id': self.id, }
 
 
 engine = create_engine('sqlite:///category.db')
-
 
 Base.metadata.create_all(engine)

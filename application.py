@@ -24,9 +24,9 @@ Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+app.route('/')
 
 
-@app.route('/')
 @app.route('/categories')
 def show_categories():
     categories = session.query(Category).order_by(asc(Category.name)).all()
@@ -37,10 +37,12 @@ def show_categories():
 # Create anti-forgery state token
 @app.route('/login')
 def showLogin():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x
-      in xrange(32))
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
     login_session['state'] = state
-    return render_template('login.html', STATE=state, GOOGLE_CLIENT_ID=CLIENT_ID)
+    return render_template('login.html',
+                           STATE=state,
+                           GOOGLE_CLIENT_ID=CLIENT_ID)
 
 
 @app.route('/gconnect', methods=['POST'])
@@ -66,8 +68,8 @@ def gconnect():
 
     # Check that the access token is valid.
     access_token = credentials.access_token
-    url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
-           % access_token)
+    url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' %
+           access_token)
     h = httplib2.Http()
     result = json.loads(h.request(url, 'GET')[1])
     # If there was an error in the access token info, abort.
@@ -94,8 +96,8 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 

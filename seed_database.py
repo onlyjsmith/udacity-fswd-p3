@@ -31,6 +31,7 @@ def create_record(seed, seed_type):
     session.add(record)
     session.commit()
 
+
 if __name__ == '__main__':
     # Load the `seeds.json` file, and iterate, creating seed records for each
     # type of record.
