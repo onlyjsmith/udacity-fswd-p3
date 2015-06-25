@@ -24,8 +24,29 @@ Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
-app.route('/')
 
+# User Helper Functions
+
+def createUser(login_session):
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
 
 @app.route('/')
 @app.route('/categories')
@@ -112,18 +133,17 @@ def gconnect():
     answer = requests.get(userinfo_url, params=params)
     data = answer.json()
 
-    # login_session['username'] = data['name']
-    # login_session['picture'] = data['picture']
-    # login_session['email'] = data['email']
-    # # ADD PROVIDER TO LOGIN SESSION
-    # login_session['provider'] = 'google'
+    login_session['username'] = data['name']
+    login_session['picture'] = data['picture']
+    login_session['email'] = data['email']
+    # ADD PROVIDER TO LOGIN SESSION
+    login_session['provider'] = 'google'
 
-    # # see if user exists, if it doesn't make a new one
-    # # user_id = getUserID(data["email"])
-    # # if not user_id:
-    # #     user_id = createUser(login_session)
-    # # login_session['user_id'] = user_id
-    # # print(login_session)
+    # see if user exists, if it doesn't make a new one
+    user_id = getUserID(data["email"])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
 
     output = ''
     output += '<h1>Welcome, '
