@@ -14,7 +14,7 @@ function signInCallback(authResult) {
       success: function(result) {
         // Handle or verify the server response if necessary.
         if (result) {
-          console.log('Logged in');
+          // Redirect immediately to root
           window.location.href = "/";
         } else if (authResult['error']) {
           console.log('There was an error: ' + authResult['error']);

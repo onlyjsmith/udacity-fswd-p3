@@ -147,16 +147,16 @@ def gconnect():
 
     output = ''
     output += '<h1>Welcome, '
-    # output += login_session['username']
+    output += login_session['username']
     output += login_session['gplus_id']
     output += '!</h1>'
-    # output += '<img src="'
-    # output += login_session['picture']
-    # output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += '<img src="'
+    output += login_session['picture']
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
     flash("you are now logged in as %s" % login_session['gplus_id'])
     print "Done with auth!"
-    return output
+    return output # `output` is returned to as the response to the POST request
 
 
 if __name__ == '__main__':
