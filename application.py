@@ -29,6 +29,7 @@ session = DBSession()
 # User Helper Functions
 #
 
+
 # Create User from given session
 def createUser(login_session):
     newUser = User(name=login_session['username'],
@@ -56,17 +57,21 @@ def getUserID(email):
     except:
         return None
 
-
 #
 # Category CRUD routes
 #
+
 
 @app.route('/')
 @app.route('/category/')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name)).all()
-    print(categories)
-    return render_template('showCategories.html', categories=categories)
+    readonly = 'username' not in login_session or creator.id != login_session[
+        'user_id'
+    ]
+    return render_template('showCategories.html',
+                           categories=categories,
+                           readonly=readonly)
 
 
 @app.route('/category/new/', methods=['GET', 'POST'])
@@ -90,8 +95,7 @@ def newCategory():
 
 @app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
 def editCategory(category_id):
-    editedCategory = session.query(
-        Category).filter_by(id=category_id).one()
+    editedCategory = session.query(Category).filter_by(id=category_id).one()
     if request.method == 'POST':
         if request.form['name']:
             editedCategory.name = request.form['name']
@@ -105,10 +109,10 @@ def editCategory(category_id):
 def deleteCategory(category_id):
     pass
 
-
 #
 # Item CRUD routes
 #
+
 
 @app.route('/category/<int:category_id>/')
 @app.route('/category/<int:category_id>/items/')
@@ -116,11 +120,9 @@ def showItems(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
     creator = getUserInfo(category.user_id)
     items = session.query(Item).filter_by(category_id=category_id).all()
-    if 'username' not in login_session or creator.id != login_session['user_id'
-                                                                      ]:
-        readonly = True
-    else:
-        readonly = False
+    readonly = 'username' not in login_session or creator.id != login_session[
+        'user_id'
+    ]
     return render_template('showItems.html',
                            items=items,
                            category=category,
@@ -132,8 +134,11 @@ def showItems(category_id):
 def newItem(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
     if request.method == 'POST':
-        newItem = Item(name=request.form['name'], description=request.form[
-                           'description'], category_id=category_id)
+        newItem = Item(name=request.form['name'],
+                       description=request.form[
+                           'description'
+                       ],
+                       category_id=category_id)
         session.add(newItem)
         session.commit()
         flash('%s Item created' % (newItem.name))
@@ -157,7 +162,10 @@ def editItem(category_id, item_id):
         flash('Item Successfully Edited')
         return redirect(url_for('showItems', category_id=category_id))
     else:
-        return render_template('editItem.html', category_id=category_id, item_id=item_id, item=editedItem)
+        return render_template('editItem.html',
+                               category_id=category_id,
+                               item_id=item_id,
+                               item=editedItem)
 
 
 @app.route('/category/<int:category_id>/items/<int:item_id>/delete/',
@@ -165,10 +173,10 @@ def editItem(category_id, item_id):
 def deleteItem(category_id, item_id):
     pass
 
-
 #
 # Authentication and session management routes
 #
+
 
 # Create anti-forgery state token
 @app.route('/login')

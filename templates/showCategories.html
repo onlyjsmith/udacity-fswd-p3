@@ -6,7 +6,9 @@
     <div class="col-md-1"></div>
     <div class="col-md-11 padding-none">
       <h1>Categories</h1>
-      <a href="{{url_for('newCategory')}}">+ add</a>
+      {% if not readonly %}
+        <a href="{{url_for('newCategory')}}">+ add</a>
+      {% endif %}
     </div>
   </div>
 

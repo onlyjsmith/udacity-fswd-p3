@@ -45,8 +45,10 @@
         <div class="menu-item">
           <h3>{{i.name}}</h3>
           <p>{{i.description}}</p>
-          <a href='{{url_for('editItem', category_id = category.id, item_id=i.id ) }}'>Edit</a> |
-          <a href='{{url_for('deleteItem', category_id = category.id, item_id=i.id ) }}'>Delete</a>
+          {% if not readonly %}
+            <a href='{{url_for('editItem', category_id = category.id, item_id=i.id ) }}'>Edit</a> |
+            <a href='{{url_for('deleteItem', category_id = category.id, item_id=i.id ) }}'>Delete</a>
+          {% endif %}
         </div>
       {% endfor %}
     </div>
