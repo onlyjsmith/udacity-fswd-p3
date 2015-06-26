@@ -119,6 +119,8 @@ def showItems(category_id):
     if 'username' not in login_session or creator.id != login_session['user_id'
                                                                       ]:
         readonly = True
+    else:
+        readonly = False
     return render_template('showItems.html',
                            items=items,
                            category=category,
@@ -128,7 +130,16 @@ def showItems(category_id):
 
 @app.route('/category/<int:category_id>/items/new/', methods=['GET', 'POST'])
 def newItem(category_id):
-    pass
+    category = session.query(Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        newItem = Item(name=request.form['name'], description=request.form[
+                           'description'], category_id=category_id)
+        session.add(newItem)
+        session.commit()
+        flash('%s Item created' % (newItem.name))
+        return redirect(url_for('showItems', category_id=category_id))
+    else:
+        return render_template('newItem.html', category_id=category_id)
 
 
 @app.route('/category/<int:category_id>/items/<int:item_id>/edit/',
