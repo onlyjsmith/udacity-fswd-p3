@@ -53,11 +53,28 @@ def getUserID(email):
 
 
 @app.route('/')
-@app.route('/categories')
+@app.route('/category')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name)).all()
     print(categories)
     return render_template('show_categories.html', categories=categories)
+
+@app.route('/category/new/', methods=['GET', 'POST'])
+def newCategory():
+    # Redirect to login if not already logged-in
+    if 'username' not in login_session:
+        return redirect('/login')
+
+    # If responding to form submission
+    if request.method == 'POST':
+        newCategory = Category(
+            name=request.form['name'], user_id=login_session['user_id'])
+        session.add(newCategory)
+        flash('New Category %s Successfully Created' % newCategory.name)
+        session.commit()
+        return redirect(url_for('showCategories'))
+    else:
+        return render_template('newCategory.html')
 
 
 # Create anti-forgery state token
