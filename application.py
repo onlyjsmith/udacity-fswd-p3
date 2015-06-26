@@ -25,8 +25,11 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-
+#
 # User Helper Functions
+#
+
+# Create User from given session
 def createUser(login_session):
     newUser = User(name=login_session['username'],
                    email=login_session[
@@ -39,11 +42,13 @@ def createUser(login_session):
     return user.id
 
 
+# Find User object by user_id
 def getUserInfo(user_id):
     user = session.query(User).filter_by(id=user_id).one()
     return user
 
 
+# Find user by email
 def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
@@ -52,12 +57,17 @@ def getUserID(email):
         return None
 
 
+#
+# Category CRUD routes
+#
+
 @app.route('/')
-@app.route('/category')
+@app.route('/category/')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name)).all()
     print(categories)
-    return render_template('show_categories.html', categories=categories)
+    return render_template('showCategories.html', categories=categories)
+
 
 @app.route('/category/new/', methods=['GET', 'POST'])
 def newCategory():
@@ -68,14 +78,86 @@ def newCategory():
     # If responding to form submission
     if request.method == 'POST':
         newCategory = Category(
-            name=request.form['name'], user_id=login_session['user_id'])
+            name=request.form['name'],
+            user_id=login_session['user_id'])
         session.add(newCategory)
-        flash('New Category %s Successfully Created' % newCategory.name)
+        flash('%s Category created' % newCategory.name)
         session.commit()
         return redirect(url_for('showCategories'))
     else:
         return render_template('newCategory.html')
 
+
+@app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
+def editCategory(category_id):
+    editedCategory = session.query(
+        Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            editedCategory.name = request.form['name']
+            flash('Edited %s' % editedCategory.name)
+            return redirect(url_for('showCategories'))
+    else:
+        return render_template('editCategory.html', category=editedCategory)
+
+
+@app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
+def deleteCategory(category_id):
+    pass
+
+
+#
+# Item CRUD routes
+#
+
+@app.route('/category/<int:category_id>/')
+@app.route('/category/<int:category_id>/items/')
+def showItems(category_id):
+    category = session.query(Category).filter_by(id=category_id).one()
+    creator = getUserInfo(category.user_id)
+    items = session.query(Item).filter_by(category_id=category_id).all()
+    if 'username' not in login_session or creator.id != login_session['user_id'
+                                                                      ]:
+        readonly = True
+    return render_template('showItems.html',
+                           items=items,
+                           category=category,
+                           creator=creator,
+                           readonly=readonly)
+
+
+@app.route('/category/<int:category_id>/items/new/', methods=['GET', 'POST'])
+def newItem(category_id):
+    pass
+
+
+@app.route('/category/<int:category_id>/items/<int:item_id>/edit/',
+           methods=['GET', 'POST'])
+def editItem(category_id, item_id):
+    editedItem = session.query(Item).filter_by(id=item_id).one()
+    category = session.query(Category).filter_by(id=category_id).one()
+    if request.method == 'POST':
+        if request.form['name']:
+            editedItem.name = request.form['name']
+        if request.form['description']:
+            editedItem.description = request.form['description']
+        session.add(editedItem)
+        session.commit()
+        flash('Item Successfully Edited')
+        return redirect(url_for('showItems', category_id=category_id))
+    else:
+        return render_template('editItem.html', category_id=category_id, item_id=item_id, item=editedItem)
+
+
+@app.route('/category/<int:category_id>/items/<int:item_id>/delete/',
+           methods=['GET', 'POST'])
+def deleteItem(category_id, item_id):
+    pass
+
+
+#
+# Authentication and session management routes
+#
 
 # Create anti-forgery state token
 @app.route('/login')
