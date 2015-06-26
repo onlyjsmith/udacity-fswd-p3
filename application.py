@@ -66,9 +66,7 @@ def getUserID(email):
 @app.route('/category/')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name)).all()
-    readonly = 'username' not in login_session or creator.id != login_session[
-        'user_id'
-    ]
+    readonly = 'username' not in login_session
     return render_template('showCategories.html',
                            categories=categories,
                            readonly=readonly)
