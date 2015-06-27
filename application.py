@@ -61,6 +61,7 @@ def getUserID(email):
 # API endpoints
 #
 
+
 @app.route('/category.json')
 def categoriesJSON():
     categories = session.query(Category).all()
@@ -69,8 +70,7 @@ def categoriesJSON():
 
 @app.route('/category/<int:category_id>.json')
 def itemsJSON(category_id):
-    items = session.query(Item).filter_by(
-        category_id=category_id).all()
+    items = session.query(Item).filter_by(category_id=category_id).all()
     return jsonify(items=[i.serialize for i in items])
 
 
@@ -78,7 +78,6 @@ def itemsJSON(category_id):
 def itemJSON(category_id, item_id):
     item = session.query(Item).filter_by(id=item_id).one()
     return jsonify(item=item.serialize)
-
 
 #
 # Category CRUD routes
@@ -117,6 +116,9 @@ def newCategory():
 @app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
 def editCategory(category_id):
     editedCategory = session.query(Category).filter_by(id=category_id).one()
+    if editedCategory.user_id != login_session['user_id']:
+        flash('Not authorised to delete %s' % editedCategory.name)
+        return redirect(url_for('showCategories'))
     if request.method == 'POST':
         if request.form['name']:
             editedCategory.name = request.form['name']
@@ -166,8 +168,11 @@ def showItems(category_id):
 @app.route('/category/<int:category_id>/items/new/', methods=['GET', 'POST'])
 def newItem(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
+    categories = session.query(Category).filter_by(
+        user_id=login_session['user_id']).all()
     if request.method == 'POST':
         newItem = Item(name=request.form['name'],
+                       user_id=category.user_id,
                        description=request.form[
                            'description'
                        ],
@@ -177,7 +182,9 @@ def newItem(category_id):
         flash('%s Item created' % (newItem.name))
         return redirect(url_for('showItems', category_id=category_id))
     else:
-        return render_template('newItem.html', category_id=category_id)
+        return render_template('newItem.html',
+                               category_id=category_id,
+                               categories=categories)
 
 
 @app.route('/category/<int:category_id>/items/<int:item_id>/edit/',
@@ -185,7 +192,12 @@ def newItem(category_id):
 def editItem(category_id, item_id):
     editedItem = session.query(Item).filter_by(id=item_id).one()
     category = session.query(Category).filter_by(id=category_id).one()
-    categories = session.query(Category).all()
+    categories = session.query(Category).filter_by(
+        user_id=login_session['user_id']).all()
+    if editedItem.user_id != login_session['user_id']:
+        flash('Not authorised to edit %s' % editedItem.name)
+        return redirect(url_for('showItems', category_id=category_id))
+
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
@@ -196,7 +208,8 @@ def editItem(category_id, item_id):
         session.add(editedItem)
         session.commit()
         flash('Item Successfully Edited')
-        return redirect(url_for('showItems', category_id=category_id))
+        return redirect(url_for('showItems',
+                                category_id=editedItem.category_id))
     else:
         return render_template('editItem.html',
                                category_id=category_id,
@@ -226,6 +239,7 @@ def deleteItem(category_id, item_id):
                                category_id=category.id,
                                item=itemToDelete)
 
+
 @app.route('/category/<int:category_id>/items/<int:item_id>/')
 def showItem(category_id, item_id):
     category = session.query(Category).filter_by(id=category_id).one()
@@ -238,7 +252,6 @@ def showItem(category_id, item_id):
                            item=item,
                            category=category,
                            readonly=readonly)
-
 
 #
 # Authentication and session management routes
