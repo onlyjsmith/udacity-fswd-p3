@@ -173,14 +173,15 @@ def newItem(category_id):
     if request.method == 'POST':
         newItem = Item(name=request.form['name'],
                        user_id=category.user_id,
+                       category_id=request.form['category_id'],
                        description=request.form[
                            'description'
-                       ],
-                       category_id=category_id)
+                       ])
         session.add(newItem)
         session.commit()
         flash('%s Item created' % (newItem.name))
-        return redirect(url_for('showItems', category_id=category_id))
+        return redirect(url_for('showItems',
+                                category_id=request.form['category_id']))
     else:
         return render_template('newItem.html',
                                category_id=category_id,

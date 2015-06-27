@@ -20,8 +20,11 @@
             <a href = "{{url_for('showItems', category_id = category.id)}}">
               {{category.name}}
             </a>
-            {% if not readonly %}<a href="{{url_for('editCategory', category_id=category.id)}}">(edit)</a>{% endif %}
           </h3>
+          {% if not readonly %}
+            <a href="{{url_for('editCategory', category_id=category.id)}}">edit</a> |
+            <a href="{{url_for('deleteCategory', category_id=category.id)}}">delete</a>
+          {% endif %}
         </div>
         <div class="col-md-1"></div>
       </div>
