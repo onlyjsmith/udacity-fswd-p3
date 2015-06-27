@@ -69,10 +69,15 @@ def categoriesJSON():
 
 @app.route('/category/<int:category_id>.json')
 def itemsJSON(category_id):
-    category = session.query(Category).filter_by(id=category_id).one()
     items = session.query(Item).filter_by(
         category_id=category_id).all()
     return jsonify(items=[i.serialize for i in items])
+
+
+@app.route('/category/<int:category_id>/items/<int:item_id>.json')
+def itemJSON(category_id, item_id):
+    item = session.query(Item).filter_by(id=item_id).one()
+    return jsonify(item=item.serialize)
 
 
 #
@@ -216,6 +221,20 @@ def deleteItem(category_id, item_id):
         return render_template('deleteItem.html',
                                category_id=category.id,
                                item=itemToDelete)
+
+@app.route('/category/<int:category_id>/items/<int:item_id>/')
+def showItem(category_id, item_id):
+    category = session.query(Category).filter_by(id=category_id).one()
+    creator = getUserInfo(category.user_id)
+    item = session.query(Item).filter_by(id=item_id).one()
+    readonly = 'username' not in login_session or creator.id != login_session[
+        'user_id'
+    ]
+    return render_template('showItem.html',
+                           item=item,
+                           category=category,
+                           readonly=readonly)
+
 
 #
 # Authentication and session management routes

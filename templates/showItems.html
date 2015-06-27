@@ -42,7 +42,9 @@
       <h2>Items</h2>
       {% for i in items %}
         <div class="menu-item">
-          <h3>{{i.name}}</h3>
+          <a href="{{url_for('showItem', category_id=category.id, item_id=i.id)}}">
+            <h3>{{i.name}}</h3>
+          </a>
           <p>{{i.description}}</p>
           {% if not readonly %}
             <a href='{{url_for('editItem', category_id = category.id, item_id=i.id ) }}'>Edit</a> |
