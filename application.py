@@ -185,11 +185,14 @@ def newItem(category_id):
 def editItem(category_id, item_id):
     editedItem = session.query(Item).filter_by(id=item_id).one()
     category = session.query(Category).filter_by(id=category_id).one()
+    categories = session.query(Category).all()
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
         if request.form['description']:
             editedItem.description = request.form['description']
+        if request.form['category_id']:
+            editedItem.category_id = request.form['category_id']
         session.add(editedItem)
         session.commit()
         flash('Item Successfully Edited')
@@ -197,6 +200,7 @@ def editItem(category_id, item_id):
     else:
         return render_template('editItem.html',
                                category_id=category_id,
+                               categories=categories,
                                item_id=item_id,
                                item=editedItem)
 
