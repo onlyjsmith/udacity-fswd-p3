@@ -105,8 +105,20 @@ def editCategory(category_id):
 
 @app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
 def deleteCategory(category_id):
-    pass
-
+    categoryToDelete = session.query(Category).filter_by(id=category_id).one()
+    if 'username' not in login_session:
+        return redirect('/login')
+    if categoryToDelete.user_id != login_session['user_id']:
+        flash('Not authorised to delete %s' % categoryToDelete.name)
+        return redirect(url_for('showCategories', category_id=category_id))
+    if request.method == 'POST':
+        session.delete(categoryToDelete)
+        flash('%s Successfully Deleted' % categoryToDelete.name)
+        session.commit()
+        return redirect(url_for('showCategories', category_id=category_id))
+    else:
+        return render_template('deleteCategory.html',
+                               category=categoryToDelete)
 #
 # Item CRUD routes
 #
