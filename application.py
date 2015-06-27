@@ -115,7 +115,7 @@ def deleteCategory(category_id):
         session.delete(categoryToDelete)
         flash('%s Successfully Deleted' % categoryToDelete.name)
         session.commit()
-        return redirect(url_for('showCategories', category_id=category_id))
+        return redirect(url_for('showCategories'))
     else:
         return render_template('deleteCategory.html',
                                category=categoryToDelete)
@@ -181,7 +181,23 @@ def editItem(category_id, item_id):
 @app.route('/category/<int:category_id>/items/<int:item_id>/delete/',
            methods=['GET', 'POST'])
 def deleteItem(category_id, item_id):
-    pass
+    if 'username' not in login_session:
+        return redirect('/login')
+    category = session.query(Category).filter_by(id=category_id).one()
+    itemToDelete = session.query(Item).filter_by(id=item_id).one()
+    if category.user_id != login_session['user_id']:
+        flash('Not authorised to delete %s from %s' % itemToDelete.name,
+              category.name)
+        return redirect(url_for('showItems', category_id=category.id))
+    if request.method == 'POST':
+        session.delete(itemToDelete)
+        session.commit()
+        flash('Item Successfully Deleted')
+        return redirect(url_for('showItems', category_id=category.id))
+    else:
+        return render_template('deleteItem.html',
+                               category_id=category.id,
+                               item=itemToDelete)
 
 #
 # Authentication and session management routes
