@@ -58,6 +58,24 @@ def getUserID(email):
         return None
 
 #
+# API endpoints
+#
+
+@app.route('/category.json')
+def categoriesJSON():
+    categories = session.query(Category).all()
+    return jsonify(categories=[r.serialize for r in categories])
+
+
+@app.route('/category/<int:category_id>.json')
+def itemsJSON(category_id):
+    category = session.query(Category).filter_by(id=category_id).one()
+    items = session.query(Item).filter_by(
+        category_id=category_id).all()
+    return jsonify(items=[i.serialize for i in items])
+
+
+#
 # Category CRUD routes
 #
 
