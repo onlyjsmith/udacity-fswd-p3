@@ -4,6 +4,9 @@
   {% include '_flash.html' %}
 
   <h2> Are you sure you want to delete {{category.name}}? </h2>
+  <div class="alert alert-danger">
+    <p>This will also delete all Items in this Category. Please edit and move them to another category if you'd like to keep any of them.</p>
+  </div>
 
   <form action="{{url_for('deleteCategory', category_id=category.id)}}" method = 'post'>
     <input type="hidden" name="delete_token" value="{{delete_token}}">
