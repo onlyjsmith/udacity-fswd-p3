@@ -206,7 +206,8 @@ def newItem(category_id):
                        category_id=request.form['category_id'],
                        description=request.form[
                            'description'
-                       ])
+                       ],
+                       image_url=request.form['image_url'])
         session.add(newItem)
         session.commit()
         flash('%s Item created' % (newItem.name))
@@ -236,6 +237,8 @@ def editItem(category_id, item_id):
             editedItem.description = request.form['description']
         if request.form['category_id']:
             editedItem.category_id = request.form['category_id']
+        if request.form['image_url']:
+            editedItem.image_url = request.form['image_url']
         session.add(editedItem)
         session.commit()
         flash('Item Successfully Edited')

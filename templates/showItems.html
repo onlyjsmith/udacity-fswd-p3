@@ -19,6 +19,9 @@
             <h4>{{i.name}}</h4>
           </a>
           <p>{{i.description}}</p>
+          {% if i.image_url %}
+            <img max-height='150px' src='{{i.image_url}}'/>
+          {% endif %}
           {% if not readonly %}
             <a href='{{url_for('editItem', category_id = category.id, item_id=i.id ) }}'>Edit</a> |
             <a href='{{url_for('deleteItem', category_id = category.id, item_id=i.id ) }}'>Delete</a>

@@ -13,6 +13,11 @@
     <div class="">
       {{ item.description }}
     </div>
+    {% if item.image_url %}
+      <div class="">
+        <img max-height='150px' src="{{item.image_url}}" alt="" />
+      </div>
+    {% endif %}
     {% if not readonly %}
       <div class="">
         {% if not readonly %}
