@@ -110,10 +110,9 @@ def itemJSON(category_id, item_id, format):
 @app.route('/category/')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name)).all()
-    readonly = 'username' not in login_session
     return render_template('showCategories.html',
-                           categories=categories,
-                           readonly=readonly)
+                           categories=categories
+                           )
 
 
 @app.route('/category/new/', methods=['GET', 'POST'])

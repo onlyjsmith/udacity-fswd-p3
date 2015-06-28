@@ -13,7 +13,7 @@
     {% for category in categories %}
       <div class='list-group-item'>
         <a href = "{{url_for('showItems', category_id = category.id)}}">
-          <h4 class="list-group-item-heading">{{category.name}} <span class="badge">42</span></h4>
+          <h4 class="list-group-item-heading">{{category.name}}</h4>
         </a>
         <p>
           {% if not readonly %}
