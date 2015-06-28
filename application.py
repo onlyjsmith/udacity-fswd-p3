@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME = "Categories and Items"
+APPLICATION_NAME = "Categories&Items"
 
 # Connect to Database and create database session
 engine = create_engine('sqlite:///category.db')
@@ -357,7 +357,7 @@ def gconnect():
     output += login_session['picture']
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
-    flash("you are now logged in as %s" % login_session['gplus_id'])
+    flash("you are now logged in as %s" % login_session['email'])
     print "Done with auth!"
     return output  # `output` is returned to as the response to the POST request
 
@@ -406,4 +406,4 @@ def gdisconnect():
 if __name__ == '__main__':
     app.secret_key = '97249824iini34r90304r90we0f9j0w9ejf09j2340u039j90jfwef'
     app.debug = True
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8000)
