@@ -15,3 +15,8 @@ Check `requirements.txt` for a list of the required libraries. Run `pip install 
 2. If you want some seed data to start with `python seed_database.py` will help.
 3. `python application.py` will get the application up and running.
 4. Point your browser to [`http://localhost:8000`](http://localhost:8000)
+
+
+## Notes
+
+If you've trashed the database while developing, don't forget to re-login the current user, or they won't be created in the database.
