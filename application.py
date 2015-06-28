@@ -9,6 +9,7 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
 import json
+from dicttoxml import dicttoxml
 from flask import make_response
 import requests
 
@@ -62,22 +63,39 @@ def getUserID(email):
 #
 
 
-@app.route('/category.json')
-def categoriesJSON():
+@app.route('/category.<string:format>')
+def categoriesJSON(format):
     categories = session.query(Category).all()
-    return jsonify(categories=[r.serialize for r in categories])
+    serialized = [r.serialize for r in categories]
+    if format == 'json':
+        return jsonify(categories=serialized)
+    elif format == 'xml':
+        return app.response_class(dicttoxml(serialized), mimetype='application/xml')
+    else:
+        return 'Unknown format'
 
 
-@app.route('/category/<int:category_id>.json')
-def itemsJSON(category_id):
+@app.route('/category/<int:category_id>.<string:format>')
+def itemsJSON(category_id, format):
     items = session.query(Item).filter_by(category_id=category_id).all()
-    return jsonify(items=[i.serialize for i in items])
+    serialized = [i.serialize for i in items]
+    if format == 'json':
+        return jsonify(items=serialized)
+    elif format == 'xml':
+        return app.response_class(dicttoxml(serialized), mimetype='application/xml')
+    else:
+        return 'Unknown format'
 
-
-@app.route('/category/<int:category_id>/items/<int:item_id>.json')
-def itemJSON(category_id, item_id):
+@app.route('/category/<int:category_id>/items/<int:item_id>.<string:format>')
+def itemJSON(category_id, item_id, format):
     item = session.query(Item).filter_by(id=item_id).one()
-    return jsonify(item=item.serialize)
+    serialized = [item.serialize]
+    if format == 'json':
+        return jsonify(item=serialized)
+    elif format == 'xml':
+        return app.response_class(dicttoxml(serialized), mimetype='application/xml')
+    else:
+        return 'Unknown format'
 
 #
 # Category CRUD routes
