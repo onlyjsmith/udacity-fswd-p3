@@ -160,6 +160,7 @@ def deleteCategory(category_id):
         return redirect(url_for('showCategories', category_id=category_id))
     if request.method == 'POST':
         if request.form['delete_token'] == login_session['delete_token']:
+            session.query(Item).filter_by(category_id=category_id).delete()
             session.delete(categoryToDelete)
             flash('%s Successfully Deleted' % categoryToDelete.name)
             session.commit()
