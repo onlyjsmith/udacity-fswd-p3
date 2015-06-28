@@ -70,7 +70,8 @@ def categoriesJSON(format):
     if format == 'json':
         return jsonify(categories=serialized)
     elif format == 'xml':
-        return app.response_class(dicttoxml(serialized), mimetype='application/xml')
+        return app.response_class(dicttoxml(serialized),
+                                  mimetype='application/xml')
     else:
         return 'Unknown format'
 
@@ -82,9 +83,11 @@ def itemsJSON(category_id, format):
     if format == 'json':
         return jsonify(items=serialized)
     elif format == 'xml':
-        return app.response_class(dicttoxml(serialized), mimetype='application/xml')
+        return app.response_class(dicttoxml(serialized),
+                                  mimetype='application/xml')
     else:
         return 'Unknown format'
+
 
 @app.route('/category/<int:category_id>/items/<int:item_id>.<string:format>')
 def itemJSON(category_id, item_id, format):
@@ -93,7 +96,8 @@ def itemJSON(category_id, item_id, format):
     if format == 'json':
         return jsonify(item=serialized)
     elif format == 'xml':
-        return app.response_class(dicttoxml(serialized), mimetype='application/xml')
+        return app.response_class(dicttoxml(serialized),
+                                  mimetype='application/xml')
     else:
         return 'Unknown format'
 
@@ -148,20 +152,28 @@ def editCategory(category_id):
 
 @app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
 def deleteCategory(category_id):
-    categoryToDelete = session.query(Category).filter_by(id=category_id).one()
     if 'username' not in login_session:
         return redirect('/login')
+    categoryToDelete = session.query(Category).filter_by(id=category_id).one()
     if categoryToDelete.user_id != login_session['user_id']:
         flash('Not authorised to delete %s' % categoryToDelete.name)
         return redirect(url_for('showCategories', category_id=category_id))
     if request.method == 'POST':
-        session.delete(categoryToDelete)
-        flash('%s Successfully Deleted' % categoryToDelete.name)
-        session.commit()
-        return redirect(url_for('showCategories'))
+        if request.form['delete_token'] == login_session['delete_token']:
+            
+            session.delete(categoryToDelete)
+            flash('%s Successfully Deleted' % categoryToDelete.name)
+            session.commit()
+            return redirect(url_for('showCategories'))
+        else:
+            del login_session['delete_token']
+            flash('Not authorised to delete %s' % categoryToDelete.name)
+            return redirect(url_for('showCategories', category_id=category_id))
     else:
+        login_session['delete_token'] = createRandomString(64)
         return render_template('deleteCategory.html',
-                               category=categoryToDelete)
+                               category=categoryToDelete,
+                               delete_token=login_session['delete_token'])
 #
 # Item CRUD routes
 #
@@ -249,14 +261,22 @@ def deleteItem(category_id, item_id):
               category.name)
         return redirect(url_for('showItems', category_id=category.id))
     if request.method == 'POST':
-        session.delete(itemToDelete)
-        session.commit()
-        flash('Item Successfully Deleted')
-        return redirect(url_for('showItems', category_id=category.id))
+        if request.form['delete_token'] == login_session['delete_token']:
+            session.delete(itemToDelete)
+            session.commit()
+            flash('Item Successfully Deleted')
+            return redirect(url_for('showItems', category_id=category.id))
+        else:
+            del login_session['delete_token']
+            flash('Not authorised to delete %s from %s' %
+                  (itemToDelete.name, category.name))
+            return redirect(url_for('showItems', category_id=category.id))
     else:
+        login_session['delete_token'] = createRandomString(64)
         return render_template('deleteItem.html',
                                category_id=category.id,
-                               item=itemToDelete)
+                               item=itemToDelete,
+                               delete_token=login_session['delete_token'])
 
 
 @app.route('/category/<int:category_id>/items/<int:item_id>/')
@@ -277,11 +297,10 @@ def showItem(category_id, item_id):
 #
 
 
-# Create anti-forgery state token
 @app.route('/login')
 def showLogin():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
+    # Create anti-forgery state token
+    state = createRandomString(32)
     login_session['state'] = state
     return render_template('login.html',
                            STATE=state,
@@ -420,8 +439,16 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+# UTILITY
+
+
+def createRandomString(length):
+    return ''.join(random.choice(string.ascii_uppercase + string.digits)
+                   for x in xrange(32))
+
 
 if __name__ == '__main__':
+    # In production, `secret_key` should not be kept in the repo, but is here to simplify testing and review of the application
     app.secret_key = '97249824iini34r90304r90we0f9j0w9ejf09j2340u039j90jfwef'
     app.debug = True
     app.run(host='0.0.0.0', port=8000)
