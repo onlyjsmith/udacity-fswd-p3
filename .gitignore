@@ -2,3 +2,4 @@ client_secrets.json
 category.db*
 *.pyc
 .idea
+venv
