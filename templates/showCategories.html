@@ -15,13 +15,6 @@
         <a href = "{{url_for('showItems', category_id = category.id)}}">
           <h4 class="list-group-item-heading">{{category.name}}</h4>
         </a>
-        <p>
-          {% if not readonly %}
-            <a href="{{url_for('newItem', category_id=category.id)}}">+ add item</a> |
-            <a href="{{url_for('editCategory', category_id=category.id)}}">edit</a> |
-            <a href="{{url_for('deleteCategory', category_id=category.id)}}">delete</a>
-          {% endif %}
-        </p>
       </div>
     {% endfor %}
   </div>

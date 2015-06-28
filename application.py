@@ -114,7 +114,11 @@ def itemJSON(category_id, item_id, format):
 @app.route('/category/')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name)).all()
-    return render_template('showCategories.html', categories=categories)
+    if 'username' not in login_session:
+        readonly = True
+    else:
+        readonly = False
+    return render_template('showCategories.html', categories=categories, readonly=readonly)
 
 
 # Create new category
