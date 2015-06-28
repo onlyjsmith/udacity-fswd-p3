@@ -63,6 +63,7 @@ def getUserID(email):
 #
 
 
+# All categories returned as JSON or XML, depending on parameter
 @app.route('/category.<string:format>')
 def categoriesJSON(format):
     categories = session.query(Category).all()
@@ -76,6 +77,7 @@ def categoriesJSON(format):
         return 'Unknown format'
 
 
+# All items for given category returned as JSON or XML, depending on parameter
 @app.route('/category/<int:category_id>.<string:format>')
 def itemsJSON(category_id, format):
     items = session.query(Item).filter_by(category_id=category_id).all()
@@ -89,6 +91,7 @@ def itemsJSON(category_id, format):
         return 'Unknown format'
 
 
+# Single item returned as JSON or XML, depending on parameter
 @app.route('/category/<int:category_id>/items/<int:item_id>.<string:format>')
 def itemJSON(category_id, item_id, format):
     item = session.query(Item).filter_by(id=item_id).one()
@@ -106,15 +109,15 @@ def itemJSON(category_id, item_id, format):
 #
 
 
+# Root route, showing all categories
 @app.route('/')
 @app.route('/category/')
 def showCategories():
     categories = session.query(Category).order_by(asc(Category.name)).all()
-    return render_template('showCategories.html',
-                           categories=categories
-                           )
+    return render_template('showCategories.html', categories=categories)
 
 
+# Create new category
 @app.route('/category/new/', methods=['GET', 'POST'])
 def newCategory():
     # Redirect to login if not already logged-in
@@ -134,6 +137,7 @@ def newCategory():
         return render_template('newCategory.html')
 
 
+# Edit category
 @app.route('/category/<int:category_id>/edit', methods=['GET', 'POST'])
 def editCategory(category_id):
     editedCategory = session.query(Category).filter_by(id=category_id).one()
@@ -149,6 +153,7 @@ def editCategory(category_id):
         return render_template('editCategory.html', category=editedCategory)
 
 
+# Delete category
 @app.route('/category/<int:category_id>/delete', methods=['GET', 'POST'])
 def deleteCategory(category_id):
     if 'username' not in login_session:
@@ -178,6 +183,7 @@ def deleteCategory(category_id):
 #
 
 
+# Show all items for given category
 @app.route('/category/<int:category_id>/')
 @app.route('/category/<int:category_id>/items/')
 def showItems(category_id):
@@ -194,6 +200,22 @@ def showItems(category_id):
                            readonly=readonly)
 
 
+# Show single item
+@app.route('/category/<int:category_id>/items/<int:item_id>/')
+def showItem(category_id, item_id):
+    category = session.query(Category).filter_by(id=category_id).one()
+    creator = getUserInfo(category.user_id)
+    item = session.query(Item).filter_by(id=item_id).one()
+    readonly = 'username' not in login_session or creator.id != login_session[
+        'user_id'
+    ]
+    return render_template('showItem.html',
+                           item=item,
+                           category=category,
+                           readonly=readonly)
+
+
+# Create new item for given category
 @app.route('/category/<int:category_id>/items/new/', methods=['GET', 'POST'])
 def newItem(category_id):
     category = session.query(Category).filter_by(id=category_id).one()
@@ -218,6 +240,7 @@ def newItem(category_id):
                                categories=categories)
 
 
+# Edit item
 @app.route('/category/<int:category_id>/items/<int:item_id>/edit/',
            methods=['GET', 'POST'])
 def editItem(category_id, item_id):
@@ -251,6 +274,7 @@ def editItem(category_id, item_id):
                                item=editedItem)
 
 
+# Delete item
 @app.route('/category/<int:category_id>/items/<int:item_id>/delete/',
            methods=['GET', 'POST'])
 def deleteItem(category_id, item_id):
@@ -280,35 +304,21 @@ def deleteItem(category_id, item_id):
                                item=itemToDelete,
                                delete_token=login_session['delete_token'])
 
-
-@app.route('/category/<int:category_id>/items/<int:item_id>/')
-def showItem(category_id, item_id):
-    category = session.query(Category).filter_by(id=category_id).one()
-    creator = getUserInfo(category.user_id)
-    item = session.query(Item).filter_by(id=item_id).one()
-    readonly = 'username' not in login_session or creator.id != login_session[
-        'user_id'
-    ]
-    return render_template('showItem.html',
-                           item=item,
-                           category=category,
-                           readonly=readonly)
-
 #
 # Authentication and session management routes
 #
 
 
+# Create anti-forgery session token for login request
 @app.route('/login')
 def showLogin():
-    # Create anti-forgery state token
     state = createRandomString(32)
     login_session['state'] = state
     return render_template('login.html',
                            STATE=state,
                            GOOGLE_CLIENT_ID=CLIENT_ID)
 
-
+# Callback for Google plus login
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
@@ -358,6 +368,7 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    # Check if already logged in
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
@@ -376,6 +387,7 @@ def gconnect():
     answer = requests.get(userinfo_url, params=params)
     data = answer.json()
 
+    # Create session variables to store user and details
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
@@ -387,6 +399,7 @@ def gconnect():
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
 
+    # Create simple response to POST request
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -400,7 +413,7 @@ def gconnect():
     print "Done with auth!"
     return output  # `output` is returned to as the response to the POST request
 
-
+# Disconnect Googple plus and delete session variables
 @app.route('/disconnect')
 def disconnect():
     if 'provider' in login_session:
@@ -419,18 +432,20 @@ def disconnect():
         flash("You were not logged in")
         return redirect(url_for('showCategories'))
 
-
+# Disconnect a user from google plus
 @app.route('/gdisconnect')
 def gdisconnect():
     # Only disconnect a connected user.
     credentials = login_session.get('credentials')
 
+    # Check if user not currently logged int
     if credentials is None:
         response = make_response(
             json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     access_token = credentials
+    # Revoke token
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
@@ -440,15 +455,17 @@ def gdisconnect():
             json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
-
+#
 # UTILITY
+#
 
-
+# Used in tokens to avoid CRSF
 def createRandomString(length):
     return ''.join(random.choice(string.ascii_uppercase + string.digits)
                    for x in xrange(32))
 
 
+# Launch!
 if __name__ == '__main__':
     # In production, `secret_key` should not be kept in the repo, but is here to simplify testing and review of the application
     app.secret_key = '97249824iini34r90304r90we0f9j0w9ejf09j2340u039j90jfwef'
